@@ -44,7 +44,7 @@ public class EventosController {
         //verifica se o evento existe
         Optional<Eventos> eventoExistente = eventosRepository.findById(id);//busca o evento pelo ID
         if(eventoExistente.isPresent()){
-            //Se existir, pega o evento e atualiza seus campos com os dados da requisição
+            //Se existir, pega o evento e atualiza seus campos com os dados da requisição..
             Eventos evento = eventoExistente.get();
             evento.setTitulo(eventosAtualizados.getTitulo());
             evento.setDescricao(eventosAtualizados.getDescricao());
