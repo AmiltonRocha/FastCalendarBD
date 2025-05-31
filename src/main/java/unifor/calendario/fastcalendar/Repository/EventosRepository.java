@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @Repository
 public interface EventosRepository extends JpaRepository<Eventos, Long> {
      
-
+     //metodos de busca personalizadas
      Optional<Eventos> findByTitulo(String titulo);
      Optional<Eventos> findByResponsavel(String responsavel);
      Optional<Eventos> findByLocalidade(String localidade);
