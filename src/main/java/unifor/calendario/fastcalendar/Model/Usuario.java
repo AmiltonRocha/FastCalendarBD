@@ -11,13 +11,20 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import java.util.Date;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import java.util.Collection;
+
+import org.apache.catalina.User;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "usuario") 
-public class Usuario {
+public class Usuario implements UserDetails{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -56,6 +63,44 @@ public class Usuario {
         this.cargo = Cargo.USER; // Garante que o padrão seja USER ao usar este construtor
     }
     
-    
+        // Implementação dos métodos da interface UserDetails
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Retorna uma lista de GrantedAuthority baseada no cargo do usuário
+        // O nome da autoridade DEVE corresponder ao que você usa em .hasAuthority() ou .hasRole()
+        // Se usar .hasRole("ADMIN"), a autoridade deve ser "ROLE_ADMIN"
+        // Se usar .hasAuthority("ADMIN"), a autoridade deve ser "ADMIN"
+        return List.of(new SimpleGrantedAuthority(this.cargo.name()));
+    }
+
+    @Override
+    public String getPassword() {
+        return this.senha; // Retorna a senha (que será armazenada criptografada)
+    }
+
+    @Override
+    public String getUsername() {
+        return this.email; // Usaremos o email como username para login
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true; // Por padrão, a conta não expira
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true; // Por padrão, a conta não está bloqueada
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true; // Por padrão, as credenciais não expiram
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true; // Por padrão, o usuário está habilitado
+    }
     
 }

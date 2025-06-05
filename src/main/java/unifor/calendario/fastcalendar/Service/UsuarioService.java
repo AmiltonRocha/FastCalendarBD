@@ -1,19 +1,27 @@
 package unifor.calendario.fastcalendar.Service;
 
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import unifor.calendario.fastcalendar.Model.Usuario;
 import unifor.calendario.fastcalendar.Repository.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UsuarioService {
+public class UsuarioService implements UserDetailsService{
+    private final PasswordEncoder passwordEncoder; // Injetar o PasswordEncoder
+
 
     private final UsuarioRepository usuarioRepository;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // Métodos CRUD básicos (podem ser expandidos ou delegados diretamente do controller)
@@ -25,6 +33,8 @@ public class UsuarioService {
         if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email já cadastrado: " + usuario.getEmail());
         }
+        // Criptografar a senha antes de salvar
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         // Por padrão, o cargo já é USER, conforme definido na entidade e construtor
         return usuarioRepository.save(usuario);
     }
@@ -61,8 +71,8 @@ public class UsuarioService {
                 usuario.setDataNascimento(usuarioAtualizado.getDataNascimento());
             }
             if (usuarioAtualizado.getSenha() != null && !usuarioAtualizado.getSenha().trim().isEmpty()) {
-                // Idealmente, a senha seria criptografada aqui antes de salvar
-                usuario.setSenha(usuarioAtualizado.getSenha());
+                // Criptografar a nova senha
+                usuario.setSenha(passwordEncoder.encode(usuarioAtualizado.getSenha()));
             }
             // A atualização do cargo é feita por métodos específicos abaixo
             return usuarioRepository.save(usuario);
@@ -113,5 +123,13 @@ public class UsuarioService {
             return false;
         }
         return usuario.getCargo() == Usuario.Cargo.ADMIN;
+    }
+
+        // Implementação do método da interface UserDetailsService
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // "username" aqui será o email, conforme definido em Usuario.getUsername()
+        return usuarioRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com email: " + username));
     }
 }

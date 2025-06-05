@@ -3,6 +3,7 @@ package unifor.calendario.fastcalendar;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.boot.CommandLineRunner;
 import unifor.calendario.fastcalendar.Repository.UsuarioRepository;
 import unifor.calendario.fastcalendar.Model.Usuario;
@@ -19,7 +20,7 @@ public class FastcalendarApplication {
 	}
 
 	@Bean
-	CommandLineRunner demoCrud(UsuarioRepository usuarioRepository){
+	CommandLineRunner demoCrud(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder){ // Injetar PasswordEncoder
 		return (args) -> {
 			try {
 				System.out.println("\n--- INICIANDO DEMONSTRAÇÃO CRUD COM SPRING BOOT ---");
@@ -31,15 +32,15 @@ public class FastcalendarApplication {
 
 				//criando um usuario
 				System.out.println("Tentando salvar o primeiro usuário...");
-				Usuario usuario1 = usuarioRepository.save(new Usuario("João Amorin", "joao.amorin2@example.com", "1234567890", "1990-01-01", data1));
+				Usuario usuario1 = usuarioRepository.save(new Usuario("João Amorin", "joao.amorin2@example.com", passwordEncoder.encode("1234567890"), "1990-01-01", data1));
 				System.out.println("Primeiro usuário salvo com ID: " + usuario1.getId());
 
 				System.out.println("Tentando salvar o segundo usuário...");
-				Usuario usuario2 = usuarioRepository.save(new Usuario("Isaac Newton", "Isaac.newton@example.com", "9876543210", "1995-05-15", data2));
+				Usuario usuario2 = usuarioRepository.save(new Usuario("Isaac Newton", "Isaac.newton@example.com", passwordEncoder.encode("9876543210"), "1995-05-15", data2));
 				System.out.println("Segundo usuário salvo com ID: " + usuario2.getId());
 
 				System.out.println("Tentando salvar o terceiro usuário...");
-				Usuario usuario3 = usuarioRepository.save(new Usuario("LopesManeiro", "LopesManeiro@example.com", "9876543210", "1992-03-20", data3));
+				Usuario usuario3 = usuarioRepository.save(new Usuario("LopesManeiro", "LopesManeiro@example.com", passwordEncoder.encode("9876543210"), "1992-03-20", data3));
 				System.out.println("Terceiro usuário salvo com ID: " + usuario3.getId());
 
 
