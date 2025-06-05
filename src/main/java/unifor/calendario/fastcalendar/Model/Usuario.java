@@ -8,6 +8,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import java.util.Date;
 
 @Data
@@ -20,6 +22,7 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+
     @Column(name = "nome", nullable = false, length = 80)
     private String nome;
 
@@ -34,7 +37,15 @@ public class Usuario {
 
     @Column(name = "data_nascimento")
     private Date dataNascimento;
-    
+
+        public enum Cargo {
+        USER, // Usuário comum
+        ADMIN // Administrador
+    }
+
+    @Enumerated(EnumType.STRING) // Grava o nome do enum (USER, ADMIN) no banco
+    @Column(name = "cargo", nullable = false)
+    private Cargo cargo = Cargo.USER;
 
     public Usuario(String nome, String email, String senha, String matricula, Date dataNascimento) {
         this.nome = nome;
@@ -42,6 +53,7 @@ public class Usuario {
         this.senha = senha;
         this.matricula = matricula;
         this.dataNascimento = dataNascimento;
+        this.cargo = Cargo.USER; // Garante que o padrão seja USER ao usar este construtor
     }
     
     

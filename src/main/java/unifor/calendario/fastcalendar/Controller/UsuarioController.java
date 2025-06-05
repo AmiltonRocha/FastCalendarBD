@@ -1,6 +1,6 @@
 package unifor.calendario.fastcalendar.Controller;
 import unifor.calendario.fastcalendar.Model.Usuario; // importa a classe entidade Usuario
-import unifor.calendario.fastcalendar.Repository.UsuarioRepository; // importa a interface do repositório
+import unifor.calendario.fastcalendar.Service.UsuarioService; // Importa o serviço
 import org.springframework.beans.factory.annotation.Autowired; // a injeção dedependências do Spring
 import org.springframework.http.HttpStatus; // definir os códigos de status HTTP da resposta 
 import org.springframework.http.ResponseEntity; //  construir respostas HTTP completas (status, corpo, headers)
@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RequestMapping("/usuarios")
 public class UsuarioController {
     @Autowired
-    private UsuarioRepository usuarioRepository;
-
+    private UsuarioService usuarioService; // Injeta o UsuarioService
+    // private UsuarioRepository usuarioRepository; // Não é mais necessário injetar diretamente aqui para a maioria dos casos
 
      //metodo para poder cadastrar um usuario e salvar no banco de dados
     @PostMapping
@@ -30,25 +30,14 @@ public class UsuarioController {
         System.out.println("Erro: Dados incompletos");
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
-    //caso uma matricula seja igual a outra, o sistema não permitirá o cadastro
-    if(usuarioRepository.findByMatricula(usuario.getMatricula()).isPresent()){
-        System.out.println("Erro: Matrícula já cadastrada");
-        return new ResponseEntity<>(HttpStatus.CONFLICT);
 
-    }
     try{
-            // O método `save()` do JpaRepository:
-            // - Se o `usuario.id` for `null` (como é o caso de um novo usuário), ele executa um SQL INSERT.
-            // - Se o `usuario.id` tiver um valor e esse ID já existir no banco, ele executa um SQL UPDATE.
-            // O objeto retornado (`novoUsuarioSalvo`) conterá o ID gerado pelo banco.
-
-        Usuario novoUsuario = usuarioRepository.save(usuario);
+        Usuario novoUsuario = usuarioService.criarUsuario(usuario); // Usa o serviço
         System.out.println("Usuário cadastrado com sucesso. ID: " + novoUsuario.getId());
         return new ResponseEntity<>(novoUsuario, HttpStatus.CREATED);
-
-
-
-
+    } catch (IllegalArgumentException e) {
+        System.out.println("Erro ao cadastrar usuário: " + e.getMessage());
+        return new ResponseEntity<>(HttpStatus.CONFLICT); // Ou BAD_REQUEST dependendo da natureza do erro
     }catch(Exception e){
         // Captura qualquer outra exceção inesperada que possa ocorrer durante o processo de salvamento.
         System.out.println("Erro ao cadastrar usuário: " + e.getMessage());
@@ -61,7 +50,7 @@ public class UsuarioController {
     public ResponseEntity<List<Usuario>> vizualizartodosUsuarios(){
     try{
         //Metodo usado para buscar todos os usuarios no banco de dados
-        List<Usuario> usuarios = usuarioRepository.findAll();
+        List<Usuario> usuarios = usuarioService.listarTodosUsuarios(); // Usa o serviço
 
         if(usuarios.isEmpty()){
             //caso não tenha usuarios, o sistema retorna um status 204 (no content)
@@ -81,7 +70,7 @@ public class UsuarioController {
 //metodo para buscar um usuario pelo id
 @GetMapping("/{id}")
 public ResponseEntity<Usuario> buscarUsuarioPorId(@PathVariable Long id){
-    Optional<Usuario> usuarioData = usuarioRepository.findById(id);
+    Optional<Usuario> usuarioData = usuarioService.buscarUsuarioPorId(id); // Usa o serviço
 
     if(usuarioData.isPresent()){
         //caso encontre o usuario, o sistema retorna um status 200 (ok) e o usuario
@@ -96,41 +85,14 @@ public ResponseEntity<Usuario> buscarUsuarioPorId(@PathVariable Long id){
 //metodo para atualizar um usuario existente
 @PutMapping("/{id}")
 public ResponseEntity<Usuario> atualizarUsuario(@PathVariable("id") Long id, @RequestBody Usuario usuarioAtualizado) {
-    //vamos ver se a usuario existente
-    Optional<Usuario> usuarioExistenteData = usuarioRepository.findById(id);
-
-    if(usuarioExistenteData.isPresent()){
-        Usuario _usuario = usuarioExistenteData.get();//pega o usuario existente
-        if (usuarioAtualizado.getNome() != null && !usuarioAtualizado.getNome().trim().isEmpty()) {
-            _usuario.setNome(usuarioAtualizado.getNome());
-        }
-        if(usuarioAtualizado.getEmail() != null && !usuarioAtualizado.getEmail().trim().isEmpty()){
-            //verifica se o email é diferente e se já existe
-            if(!_usuario.getEmail().equals(usuarioAtualizado.getEmail()) &&
-            usuarioRepository.findByEmail(usuarioAtualizado.getEmail()).isPresent()){
-                System.out.println("Erro: Novo email '" + usuarioAtualizado.getEmail() + "' já cadastrado para outro usuário.");
-                return new ResponseEntity<>(HttpStatus.CONFLICT);
-            }
-            _usuario.setEmail(usuarioAtualizado.getEmail());
-        }
-
-        if(usuarioAtualizado.getMatricula() != null && !usuarioAtualizado.getMatricula().trim().isEmpty()){
-            //verifica se a matricula é diferente e se já existe
-            if(!_usuario.getMatricula().equals(usuarioAtualizado.getMatricula()) &&
-            usuarioRepository.findByMatricula(usuarioAtualizado.getMatricula()).isPresent()){
-                System.out.println("Erro: Nova matrícula '" + usuarioAtualizado.getMatricula() + "' já cadastrada para outro usuário.");
-                return new ResponseEntity<>(HttpStatus.CONFLICT);
-            }
-            _usuario.setMatricula(usuarioAtualizado.getMatricula());
-        }
-        if(usuarioAtualizado.getDataNascimento() != null){
-            _usuario.setDataNascimento(usuarioAtualizado.getDataNascimento());
-        }
-        Usuario usuarioSalvo = usuarioRepository.save(_usuario);
+    try {
+        Usuario usuarioSalvo = usuarioService.atualizarUsuario(id, usuarioAtualizado); // Usa o serviço
         System.out.println("Usuário com ID " + id + " atualizado com sucesso.");
         return new ResponseEntity<>(usuarioSalvo, HttpStatus.OK);
-    } else {
-        // Se o usuário com o ID fornecido não for encontrado, retorna 404 Not Found.
+    } catch (IllegalArgumentException e) {
+        System.out.println("Erro ao atualizar usuário: " + e.getMessage());
+        return new ResponseEntity<>(HttpStatus.CONFLICT); // Ou BAD_REQUEST
+    } catch (RuntimeException e) { // Captura o "Usuário não encontrado" do serviço
         System.out.println("Usuário com ID " + id + " não encontrado para atualização.");
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
@@ -139,13 +101,12 @@ public ResponseEntity<Usuario> atualizarUsuario(@PathVariable("id") Long id, @Re
 @DeleteMapping("/{id}")
 public ResponseEntity<Void> deletarUsuario(@PathVariable("id") Long id){
     try{
-        //vou verificar se o usuario existe
-        if(!usuarioRepository.existsById(id)){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-    usuarioRepository.deleteById(id);
-    System.out.println("Usuário com ID " + id + " deletado com sucesso.");
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        usuarioService.deletarUsuario(id); // Usa o serviço
+        System.out.println("Usuário com ID " + id + " deletado com sucesso.");
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (RuntimeException e) { // Captura o "Usuário não encontrado" do serviço
+        System.err.println("Erro ao deletar usuário com ID " + id + ": " + e.getMessage());
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 }catch(Exception e){
     //caso haja erro durante a remoção 
     System.err.println("Erro interno do servidor ao deletar usuário com ID " + id + ": " + e.getMessage());
@@ -154,6 +115,31 @@ public ResponseEntity<Void> deletarUsuario(@PathVariable("id") Long id){
 }
 
 }
+
+    // Endpoints para gerenciar cargos
+    @PostMapping("/{id}/promoverAdmin")
+    public ResponseEntity<Usuario> promoverParaAdmin(@PathVariable Long id) {
+        try {
+            Usuario usuarioAdmin = usuarioService.promoverParaAdmin(id);
+            return ResponseEntity.ok(usuarioAdmin);
+        } catch (RuntimeException e) {
+            System.out.println("Erro ao promover usuário: " + e.getMessage());
+            // Pode ser NOT_FOUND se o usuário não existe, ou BAD_REQUEST/CONFLICT se já é admin
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // Simplificado
+        }
+    }
+
+    @PostMapping("/{id}/rebaixarUser")
+    public ResponseEntity<Usuario> rebaixarParaUser(@PathVariable Long id) {
+        try {
+            Usuario usuarioUser = usuarioService.rebaixarParaUser(id);
+            return ResponseEntity.ok(usuarioUser);
+        } catch (RuntimeException e) {
+            System.out.println("Erro ao rebaixar usuário: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null); // Simplificado
+        }
+    }
+
 // @DeleteMapping
 //     public ResponseEntity<HttpStatus> deletarTodosUsuarios() {
 //         try {
@@ -168,7 +154,3 @@ public ResponseEntity<Void> deletarUsuario(@PathVariable("id") Long id){
 //     }
 
 }
-
-
-
-
