@@ -1,6 +1,5 @@
 package unifor.calendario.fastcalendar.Service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import unifor.calendario.fastcalendar.Model.Usuario;
 import unifor.calendario.fastcalendar.Repository.UsuarioRepository;
@@ -13,7 +12,6 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
 
-    @Autowired
     public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
@@ -38,7 +36,7 @@ public class UsuarioService {
     public List<Usuario> listarTodosUsuarios() {
         return usuarioRepository.findAll();
     }
-
+    
     public Usuario atualizarUsuario(Long id, Usuario usuarioAtualizado) {
         return usuarioRepository.findById(id).map(usuario -> {
             // Lógica de atualização, verificando campos nulos e duplicidade se necessário
