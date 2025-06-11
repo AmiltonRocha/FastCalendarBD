@@ -20,7 +20,7 @@ public class FastcalendarApplication {
 	}
 
 	@Bean
-	CommandLineRunner demoCrud(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder){ // Injetar PasswordEncoder
+	CommandLineRunner commandLineRunner(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder){ // Injetar PasswordEncoder
 		return (args) -> {
 			try {
 				System.out.println("\n--- INICIANDO DEMONSTRAÇÃO CRUD COM SPRING BOOT ---");
@@ -101,8 +101,8 @@ public class FastcalendarApplication {
 
 			// 	System.out.println("\n--- DEMONSTRAÇÃO CRUD FINALIZADA ---");
 			} catch (Exception e) {
-				System.err.println("Erro durante a execução do CRUD: " + e.getMessage());
-				e.printStackTrace();
+				System.err.println("Erro crítico durante a execução do CommandLineRunner: " + e.getMessage());
+            	e.printStackTrace();
 			}
 		};
 	}
