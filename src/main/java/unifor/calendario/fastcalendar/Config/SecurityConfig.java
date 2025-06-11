@@ -9,6 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import unifor.calendario.fastcalendar.Model.Usuario; // Importe seu enum Cargo
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -32,6 +33,7 @@ public class SecurityConfig {
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 // Proteger endpoints de gerenciamento de usuários (promover/rebaixar) - apenas ADMIN
                 .requestMatchers("/usuarios/*/promoverAdmin", "/usuarios/*/rebaixarUser").hasAuthority(Usuario.Cargo.ADMIN.name())
+                .requestMatchers(EndpointRequest.to("health", "info")).permitAll()
                 // Proteger outros endpoints de usuários - apenas ADMIN para DELETE, PUT e GET de todos
                 .requestMatchers(HttpMethod.DELETE, "/usuarios/**").hasAuthority(Usuario.Cargo.ADMIN.name())
                 .requestMatchers(HttpMethod.PUT, "/usuarios/**").hasAuthority(Usuario.Cargo.ADMIN.name()) // Permitir que o próprio usuário atualize seus dados pode ser uma regra mais granular
