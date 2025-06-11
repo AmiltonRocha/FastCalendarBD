@@ -32,15 +32,21 @@ public class FastcalendarApplication {
 
 				//criando um usuario
 				System.out.println("Tentando salvar o primeiro usuário...");
-				Usuario usuario1 = usuarioRepository.save(new Usuario("João Amorin", "joao.amorin2@example.com", passwordEncoder.encode("1234567890"), "1990-01-01", data1));
+				Usuario usuario1 = new Usuario("João Amorin", "joao.amorin2@example.com", passwordEncoder.encode("1234567890"), "1990-01-01", data1);
+				usuario1.setCargo(Usuario.Cargo.ADMIN); // Definindo como ADMIN
+				usuarioRepository.save(usuario1);
 				System.out.println("Primeiro usuário salvo com ID: " + usuario1.getId());
 
 				System.out.println("Tentando salvar o segundo usuário...");
-				Usuario usuario2 = usuarioRepository.save(new Usuario("Isaac Newton", "Isaac.newton@example.com", passwordEncoder.encode("9876543210"), "1995-05-15", data2));
+				Usuario usuario2 = new Usuario("Isaac Newton", "Isaac.newton@example.com", passwordEncoder.encode("9876543210"), "1995-05-15", data2);
+				usuario2.setCargo(Usuario.Cargo.ADMIN); // Definindo como ADMIN
+				usuarioRepository.save(usuario2);
 				System.out.println("Segundo usuário salvo com ID: " + usuario2.getId());
 
 				System.out.println("Tentando salvar o terceiro usuário...");
-				Usuario usuario3 = usuarioRepository.save(new Usuario("LopesManeiro", "LopesManeiro@example.com", passwordEncoder.encode("9876543210"), "1992-03-20", data3));
+				Usuario usuario3 = new Usuario("LopesManeiro", "LopesManeiro@example.com", passwordEncoder.encode("9876543210"), "1992-03-20", data3);
+				usuario3.setCargo(Usuario.Cargo.ADMIN); // Definindo como ADMIN
+				usuarioRepository.save(usuario3);
 				System.out.println("Terceiro usuário salvo com ID: " + usuario3.getId());
 
 
