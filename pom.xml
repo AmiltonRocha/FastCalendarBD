@@ -28,7 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
-		<version>1.18.30</version>
+		<lombok.version>1.18.30</lombok.version> <!-- Corrigido nome da propriedade -->
 	</properties>
 	<dependencies>
 		<dependency>
