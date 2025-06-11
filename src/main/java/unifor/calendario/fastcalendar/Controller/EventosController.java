@@ -40,7 +40,7 @@ public class EventosController {
    }
 
    @PutMapping("/{id}") // atualiza um evento existente
-   public ResponseEntity<Eventos> autalizarEventos(@PathVariable Long id, @RequestBody Eventos eventosAtualizados){
+   public ResponseEntity<Eventos> atualizarEventos(@PathVariable Long id, @RequestBody Eventos eventosAtualizados){
         //verifica se o evento existe
         Optional<Eventos> eventoExistente = eventosRepository.findById(id);//busca o evento pelo ID
         if(eventoExistente.isPresent()){
