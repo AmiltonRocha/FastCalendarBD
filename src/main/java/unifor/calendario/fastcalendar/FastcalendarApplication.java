@@ -2,15 +2,15 @@ package unifor.calendario.fastcalendar;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.boot.CommandLineRunner;
-import unifor.calendario.fastcalendar.Repository.UsuarioRepository;
-import unifor.calendario.fastcalendar.Model.Usuario;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+// import org.springframework.context.annotation.Bean;
+// import org.springframework.security.crypto.password.PasswordEncoder;
+// import org.springframework.boot.CommandLineRunner;
+// import unifor.calendario.fastcalendar.Repository.UsuarioRepository;
+// import unifor.calendario.fastcalendar.Model.Usuario;
+// import java.text.SimpleDateFormat;
+// import java.util.Date;
+// import java.util.List;
+// import java.util.Optional;
 
 @SpringBootApplication
 public class FastcalendarApplication {
