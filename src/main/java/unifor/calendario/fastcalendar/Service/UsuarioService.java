@@ -38,6 +38,24 @@ public class UsuarioService implements UserDetailsService{
         return usuarioRepository.save(usuario);
     }
 
+    // ================== MÉTODO TEMPORÁRIO PARA CRIAR ADMIN ==================
+    /**
+     * ATENÇÃO: Este método deve ser usado apenas para criar o usuário administrador inicial
+     * para fins de teste. O endpoint que o utiliza deve ser removido antes da implantação final.
+     */
+    public Usuario criarAdmin(Usuario usuario) {
+        if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email já cadastrado: " + usuario.getEmail());
+        }
+        // Criptografa a senha
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+        // Define o cargo diretamente como ADMIN
+        usuario.setCargo(Usuario.Cargo.ADMIN);
+        System.out.println("!!! ATENCAO: Criando um usuario ADMINISTRADOR com email: " + usuario.getEmail());
+        return usuarioRepository.save(usuario);
+    }
+    // =======================================================================
+
     public Optional<Usuario> buscarUsuarioPorId(Long id) {
         return usuarioRepository.findById(id);
     }

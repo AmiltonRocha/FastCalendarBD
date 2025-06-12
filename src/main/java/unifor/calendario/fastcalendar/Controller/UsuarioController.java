@@ -18,6 +18,25 @@ public class UsuarioController {
     private UsuarioService usuarioService; // Injeta o UsuarioService
     // private UsuarioRepository usuarioRepository; // Não é mais necessário injetar diretamente aqui para a maioria dos casos
 
+    // ================== ENDPOINT TEMPORÁRIO PARA CRIAR ADMIN ==================
+    /**
+     * ATENÇÃO: Este endpoint é apenas para fins de teste e deve ser removido
+     * antes da implantação final do projeto.
+     */
+    @PostMapping("/criar-admin-temporario")
+    public ResponseEntity<Usuario> adicionarAdminTemporario(@RequestBody Usuario usuario) {
+        try {
+            Usuario novoAdmin = usuarioService.criarAdmin(usuario);
+            return new ResponseEntity<>(novoAdmin, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(null, HttpStatus.CONFLICT); // Email já existe
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    // =======================================================================
+
+
      //metodo para poder cadastrar um usuario e salvar no banco de dados
     @PostMapping
     //primeiro nivel de validação para poder evitar erros de entrada de dados

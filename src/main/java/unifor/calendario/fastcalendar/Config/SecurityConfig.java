@@ -29,6 +29,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 // Permitir acesso público para criar usuários (registro)
                 .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
+                // !! PERMISSÃO TEMPORÁRIA PARA CRIAR ADMIN !!
+                .requestMatchers(HttpMethod.POST, "/usuarios/criar-admin-temporario").permitAll()
                 // Permitir acesso público para a documentação da API (se você usar Swagger/OpenAPI)
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 // Proteger endpoints de gerenciamento de usuários (promover/rebaixar) - apenas ADMIN
