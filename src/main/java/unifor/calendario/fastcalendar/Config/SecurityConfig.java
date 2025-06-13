@@ -8,8 +8,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import unifor.calendario.fastcalendar.Model.Usuario; // Importe seu enum Cargo
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import unifor.calendario.fastcalendar.Model.Usuario;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+
+import java.util.Arrays;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -25,31 +30,40 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Desabilitar CSRF para simplificar testes com Postman. Habilite em produção para aplicações web tradicionais.
+            .cors(withDefaults()) // HABILITA A CONFIGURAÇÃO DE CORS ABAIXO
+            .csrf(csrf -> csrf.disable()) 
             .authorizeHttpRequests(authz -> authz
-                // Permitir acesso público para criar usuários (registro)
+                // ... (o resto das suas regras continua igual)
                 .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
-                // !! PERMISSÃO TEMPORÁRIA PARA CRIAR ADMIN !!
-                .requestMatchers(HttpMethod.POST, "/usuarios/criar-admin-temporario").permitAll()
-                // Permitir acesso público para a documentação da API (se você usar Swagger/OpenAPI)
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                // Proteger endpoints de gerenciamento de usuários (promover/rebaixar) - apenas ADMIN
                 .requestMatchers("/usuarios/*/promoverAdmin", "/usuarios/*/rebaixarUser").hasAuthority(Usuario.Cargo.ADMIN.name())
                 .requestMatchers(EndpointRequest.to("health", "info")).permitAll()
-                // Proteger outros endpoints de usuários - apenas ADMIN para DELETE, PUT e GET de todos
                 .requestMatchers(HttpMethod.DELETE, "/usuarios/**").hasAuthority(Usuario.Cargo.ADMIN.name())
-                .requestMatchers(HttpMethod.PUT, "/usuarios/**").hasAuthority(Usuario.Cargo.ADMIN.name()) // Permitir que o próprio usuário atualize seus dados pode ser uma regra mais granular
+                .requestMatchers(HttpMethod.PUT, "/usuarios/**").hasAuthority(Usuario.Cargo.ADMIN.name())
                 .requestMatchers(HttpMethod.GET, "/usuarios").hasAuthority(Usuario.Cargo.ADMIN.name())
-                 // Permitir que usuários autenticados acessem seu próprio perfil
-                .requestMatchers(HttpMethod.GET, "/usuarios/{id}").authenticated() // Poderia ser mais específico para permitir apenas o próprio usuário ou admin
-                // Proteger endpoints de eventos - qualquer usuário autenticado pode gerenciar seus eventos
+                .requestMatchers(HttpMethod.GET, "/usuarios/{id}").authenticated()
                 .requestMatchers("/eventos/**").authenticated()
-                // Qualquer outra requisição precisa estar autenticada
                 .anyRequest().authenticated()
             )
-            .httpBasic(withDefaults()) // Usar HTTP Basic Authentication (bom para APIs e testes iniciais)
-            .formLogin(withDefaults()); // Ou .formLogin(withDefaults()) se preferir um formulário de login gerado pelo Spring Security
+            .httpBasic(withDefaults())
+            .formLogin(withDefaults());
 
         return http.build();
+    }
+
+    // BEAN DE CONFIGURAÇÃO DO CORS
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Permite requisições de qualquer origem. Para produção, você pode restringir.
+        configuration.setAllowedOrigins(Arrays.asList("*")); 
+        // Permite os métodos HTTP mais comuns.
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+        // Permite todos os cabeçalhos.
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration); // Aplica a configuração a todas as rotas.
+        return source;
     }
 }
