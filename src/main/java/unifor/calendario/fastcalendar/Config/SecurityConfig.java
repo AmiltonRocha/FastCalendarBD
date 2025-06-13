@@ -1,5 +1,6 @@
 package unifor.calendario.fastcalendar.Config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,6 +13,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import unifor.calendario.fastcalendar.Model.Usuario;
+import unifor.calendario.fastcalendar.Service.CustomUserDetailsService; // Importe seu UserDetailsService
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 
 import java.util.Arrays;
@@ -22,6 +24,15 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final CustomUserDetailsService customUserDetailsService;
+
+    @Autowired
+    public SecurityConfig(CustomUserDetailsService customUserDetailsService) {
+        this.customUserDetailsService = customUserDetailsService;
+    }
+
+
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -31,7 +42,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .cors(withDefaults()) // HABILITA A CONFIGURAÇÃO DE CORS ABAIXO
-            .csrf(csrf -> csrf.disable()) 
+            .csrf(csrf -> csrf.disable()) // Para APIs ou se estiver usando tokens. Para form login tradicional, considere habilitar.
             .authorizeHttpRequests(authz -> authz
                 // ... (o resto das suas regras continua igual)
                 .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
@@ -46,8 +57,16 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .httpBasic(withDefaults())
-            .formLogin(withDefaults());
-
+            .formLogin(withDefaults())
+            .userDetailsService(customUserDetailsService) // Define o UserDetailsService para carregar usuários do BD
+            .httpBasic(withDefaults()) // Habilita autenticação HTTP Basic
+            .formLogin(formLogin -> // Configura o login via formulário
+                            formLogin
+                           .loginPage("/login") // Define a URL da sua página de login (se tiver uma customizada)
+                           .defaultSuccessUrl("/home", true) // Redireciona para /home após login
+                            .permitAll() // Permite acesso à página de login para todos
+                   )
+            .logout(logout -> logout.logoutSuccessUrl("/login?logout").permitAll()); // Configura o logout
         return http.build();
     }
 
