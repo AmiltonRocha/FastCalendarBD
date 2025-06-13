@@ -12,6 +12,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import java.time.LocalTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalDate;
 
 @Data
@@ -30,6 +33,10 @@ public class Eventos {
 
     @Column(name = "descricao", columnDefinition = "TEXT")
     private String descricao;
+
+    @Column(name = "data_evento", nullable = false)
+    @JsonFormat(pattern = "dd-MM-yyyy", shape = JsonFormat.Shape.STRING)
+    private LocalDate dataEvento;
 
     @Column(name = "dias_da_semana", nullable = false)
     private String diasDaSemana;
