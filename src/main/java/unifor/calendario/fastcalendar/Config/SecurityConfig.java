@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy; // IMPORTANTE: Novo import
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -27,28 +28,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(withDefaults()) // Habilita a configuração de CORS
-            .csrf(csrf -> csrf.disable()) // Desabilita CSRF para APIs REST
+            .cors(withDefaults())
+            .csrf(csrf -> csrf.disable())
+            // Força a API a ser STATELESS, desabilitando o uso de sessões e cookies (JSESSIONID)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                // Rotas públicas
                 .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-
-                // Rotas de Admin
-                .requestMatchers("/usuarios/*/promoverAdmin", "/usuarios/*/rebaixarUser").hasAuthority(Usuario.Cargo.ADMIN.name())
-                .requestMatchers(HttpMethod.DELETE, "/usuarios/**").hasAuthority(Usuario.Cargo.ADMIN.name())
-                .requestMatchers(HttpMethod.GET, "/usuarios").hasAuthority(Usuario.Cargo.ADMIN.name())
-
-                // Rotas Autenticadas (USER ou ADMIN)
-                .requestMatchers(HttpMethod.GET, "/usuarios/me").authenticated() // Endpoint de login
-                .requestMatchers(HttpMethod.GET, "/usuarios/{id}").authenticated()
-                .requestMatchers(HttpMethod.PUT, "/usuarios/{id}").authenticated() // Rota de PUT ajustada
-                .requestMatchers("/eventos/**").authenticated()
-
-                // Qualquer outra requisição precisa de autenticação
+                .requestMatchers("/usuarios/me").authenticated()
                 .anyRequest().authenticated()
             )
-            .httpBasic(withDefaults()); // Usa HTTP Basic Authentication
+            .httpBasic(withDefaults()); // Define a autenticação como HTTP Basic
 
         return http.build();
     }
