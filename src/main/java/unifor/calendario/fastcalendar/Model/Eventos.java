@@ -35,6 +35,7 @@ public class Eventos {
     private String descricao;
 
     @Column(name = "data_evento")
+    @JsonFormat(pattern="yyyy-MM-dd") // ADICIONE ESTA LINHA
     private LocalDate dataEvento;
 
     @Column(name = "dias_da_semana", nullable = false)
